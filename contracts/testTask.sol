@@ -85,7 +85,7 @@ contract testTask is AccessControl {
     function findWinner(uint _amount)external onlyRole(DEFAULT_ADMIN_ROLE){
         require(game[id].sorted == game[id].allValues.length, "sort array first");
         uint checked = game[id].checked;
-        address[] storage array = game[id].allUsers;
+        address[] memory array = game[id].allUsers;
         if(checked == 0){
             if(game[id].allValues[0] > game[id].medianValue)
                 game[id].minimalValueDifference = game[id].allValues[0] - game[id].medianValue;
