@@ -16,11 +16,11 @@ contract testTask is AccessControl {
     struct Game{
         uint startTime;
         uint medianValue;
+        uint sorted;
+        uint checked;
         uint[] allValues;
         address[] allUsers;
         address[] winner;
-        uint    sorted;
-        uint    checked;
         uint minimalValueDifference;
     }
     mapping (uint64 => Game) game; 
