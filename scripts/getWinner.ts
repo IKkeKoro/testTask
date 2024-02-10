@@ -6,7 +6,8 @@ async function main() {
     const contract = new ethers.Contract(DEPLOYED_CONTRACT_ADDRESS, abi, signer);
 
     const gameId = 0
-    let tx = await contract.getUserData(gameId);
+    const userAddress = "0xE25AE7BFdcFAC05913c439b225D533f619b8fF9a"
+    let tx = await contract.getUserData(userAddress,gameId);
     console.log(tx)
 }
 
