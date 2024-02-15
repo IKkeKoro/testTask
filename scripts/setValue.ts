@@ -6,7 +6,8 @@ async function main() {
     const contract = new ethers.Contract(DEPLOYED_CONTRACT_ADDRESS, abi, signer);
 
     const userValue = 1500;
-    let tx = await contract.setValue(userValue);
+    const key = '1'
+    let tx = await contract.setValue(userValue,key);
     await tx.wait();
 }
 

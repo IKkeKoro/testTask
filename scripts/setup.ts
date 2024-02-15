@@ -4,7 +4,7 @@ import 'dotenv/config'
 
 const fsPromises = fs.promises;
 const ABI_FILE_PATH = 'artifacts/contracts/testTask.sol/testTask.json';
-const DEPLOYED_CONTRACT_ADDRESS = '0xa6B47460d1eE82823c11Ac0d8cE4Fb4dd80c446F';
+const DEPLOYED_CONTRACT_ADDRESS = '0x40726a68E9917a5a50E8ce2fB147a3862CF8e998';
 const { PRIVATE_KEY } = process.env;
 const { BSC_TESTNET_URL} = process.env;
 async function getAbi(){

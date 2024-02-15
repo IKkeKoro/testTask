@@ -6,7 +6,7 @@ async function main() {
     const contract = new ethers.Contract(DEPLOYED_CONTRACT_ADDRESS, abi, signer);
 
     const gameId = 0
-    let tx = await contract.getWinner(gameId);
+    let tx = await contract.getUserData(gameId);
     console.log(tx)
 }
 

@@ -4,7 +4,9 @@ async function main() {
     const abi = await getAbi()
     let signer = new ethers.Wallet(`0x${PRIVATE_KEY}`, provider);
     const contract = new ethers.Contract(DEPLOYED_CONTRACT_ADDRESS, abi, signer);
-    let tx = await contract.revealValue();
+    const value = 1500
+    const key = '1'
+    let tx = await contract.revealValue(value,key);
     await tx.wait();
 }
 
