@@ -1,26 +1,24 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.21;
-
 import "@openzeppelin/contracts/access/AccessControl.sol";
-
 //____________________________________________________________________________________________________//
 contract testTask is AccessControl { 
     struct UserData{
         uint value;        
         bool revealed;
         bool participated;
+        bytes32 valueHash;
     }
-    mapping (address => mapping(uint64 => UserData))  userData;
+    mapping (address => mapping(uint64 => UserData)) userData;
 
     struct Game{
         uint startTime;
         uint medianValue;
-        uint sorted;
-        uint checked;
         uint[] allValues;
         address[] allUsers;
         address[] winner;
+        uint sorted;
+        uint checked;
         uint minimalValueDifference;
     }
     mapping (uint64 => Game) game; 
@@ -38,6 +36,16 @@ contract testTask is AccessControl {
     event NewGame(uint64 id, uint startTime, uint endTime);
     event Winner(uint64 id, address[]);
 //ADMIN_______________________________________________________________________________________________//
+    /**
+     * Here's admin functions. Setting game's parameters such as participation time, reveal time and minimum players. 
+     *
+     * Use startGame() to begin new game 
+     * 
+     * After reveal time is ended, you need to use sortArray() first and only then findWinner()
+     * 
+     * If u checked all participations, the ID will be increased and you can start a new game.
+     */
+//____________________________________________________________________________________________________//
     function setParticipationTime(uint _participationTime)external onlyRole(DEFAULT_ADMIN_ROLE){
         participationTime = _participationTime;
     }
@@ -58,17 +66,18 @@ contract testTask is AccessControl {
     }
 
     function sortArray(uint _amount)external onlyRole(DEFAULT_ADMIN_ROLE){
-        require(block.timestamp > game[id].startTime + participationTime, "Game is still active");
+        require(block.timestamp > (game[id].startTime + participationTime + revealTime), "Game is still active");
         require(game[id].allValues.length >= minimumPlayers, "Must be more players to end the game");
         uint sorted = game[id].sorted;
         uint[] storage array = game[id].allValues;
         uint temp;
         if((sorted + _amount > array.length) || _amount == 0)
             _amount = array.length - sorted;
-
-        for(uint i = sorted; i < sorted + _amount; i++){
-            for(uint j = i;  j < sorted + _amount; j++){
-                if (array[i] > array[j]) {
+        
+        for(uint i = sorted;  i < sorted + _amount; i++)
+            for(uint j = 0; j < array.length; j++){
+            {
+                if (array[j] > array[i]) {
                     temp = array[i];
                     array[i] = array[j];
                     array[j] = temp;
@@ -129,22 +138,35 @@ contract testTask is AccessControl {
 
     }
 //USER________________________________________________________________________________________________//
-    function setValue(uint _value)external{
-        require((game[id].startTime > 0) && (game[id].startTime < block.timestamp + participationTime), "Game is not active");
+    /**
+     * Here's user functions. If game has started and participation time is not over, you can setValue(). 
+     *
+     * You need to pass value with key, that will be used to store data as a hash.
+     * 
+     * After participation time is over, you must revealValue() before reveal time expires.
+     * 
+     * If value and key on revealValue() was correct, your address paricipate in game.
+     */
+//____________________________________________________________________________________________________//
+    function setValue(uint _value, string memory _key)external{
+        require((game[id].startTime > 0) && (block.timestamp < game[id].startTime + participationTime), "Game is not active");
         require(!userData[msg.sender][id].participated,"You can't change the value");
+        require(bytes(_key).length > 0, "Setup private key first");
         userData[msg.sender][id].participated = true;
+        userData[msg.sender][id].valueHash = keccak256(abi.encodePacked(_value, _key));
+    }
+    
+    function revealValue(uint _value, string memory _key)external{
+        require((block.timestamp > game[id].startTime + participationTime) && (game[id].startTime + participationTime + revealTime > block.timestamp), "You can't reveal value now");
+        require(userData[msg.sender][id].valueHash == keccak256(abi.encodePacked(_value,_key)), "Private key or value is incorrect");
+        userData[msg.sender][id].revealed = true;
         userData[msg.sender][id].value = _value;
         game[id].allUsers.push(msg.sender);
-        game[id].allValues.push(_value);      
-    }
-
-    function revealValue()external{
-        require((block.timestamp > game[id].startTime + participationTime) && (game[id].startTime + participationTime + revealTime > block.timestamp), "You can't reveal value now");
-        userData[msg.sender][id].revealed = true;
+        game[id].allValues.push(_value); 
     }
 //VIEW________________________________________________________________________________________________//
     function getUserData(address _user, uint64 _id)external view returns(uint _value){
-        require(msg.sender == _user || userData[_user][_id].revealed, "Value is not revealed");
+        require(userData[_user][_id].revealed, "Value is not revealed");
         _value = userData[_user][_id].value;
     }
 
@@ -155,8 +177,8 @@ contract testTask is AccessControl {
     function getWinner(uint64 _id)external view returns(address[] memory _winner){
         _winner = game[_id].winner;
     }
-// only to check values
-//____________________________________________________________________________________________________//
+
+//only_to_check_values________________________________________________________________________________//
     function getArray(uint64 _id)external view returns(uint[] memory _values){
         _values = game[_id].allValues;
     }
