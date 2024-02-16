@@ -309,4 +309,27 @@ describe("TestTask", function(){
         await task.findWinner(0)
         expect(await task.id()).to.be.eq(1)
     })
+
+    it('should find winners id 2', async()=>{
+        const {users,task} = await loadFixture(deploy)
+        const values = [3500,4800,2900,12326,1900,4492,3400,11200,1500,5500,9400,2000,4905,8400,500,8800,4850,1930,2900,2000] 
+        for(let j=0;j<2;j++){
+            await task.startGame()
+            for(let i=0;i<values.length;i++){
+                await task.connect(users[i]).setValue(values[i],`${i}`)
+            }
+            await time.increase(190)
+            for(let i=0;i<values.length;i++){
+                await task.connect(users[i]).revealValue(values[i],`${i}`)
+            }
+            await time.increase(200)
+            await task.sortArray(1000)
+            await task.findWinner(1000)
+        } 
+        expect(await task.id()).to.be.eq(2)
+        console.log(await task.getWinner(1)) 
+        const array = await task.getArray(1)
+        console.log(array)
+        console.log(await task.getMedian(1))
+    })
 })
