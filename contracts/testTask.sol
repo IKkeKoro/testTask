@@ -70,7 +70,6 @@ contract testTask is AccessControl {
         require(game[id].allValues.length >= minimumPlayers, "Must be more players to end the game");
         uint sorted = game[id].sorted;
         uint[] storage array = game[id].allValues;
-        uint temp;
         if((sorted + _amount > array.length) || _amount == 0)
             _amount = array.length - sorted;
         
@@ -78,9 +77,7 @@ contract testTask is AccessControl {
             for(uint j = 0; j < array.length; j++){
             {
                 if (array[j] > array[i]) {
-                    temp = array[i];
-                    array[i] = array[j];
-                    array[j] = temp;
+                    (array[i],array[j]) = (array[j],array[i]);
                 }
             }
         }
