@@ -74,7 +74,7 @@ contract testTask is AccessControl {
             _amount = array.length - sorted;
         
         for(uint i = sorted;  i < sorted + _amount; i++)
-            for(uint j = 0; j < array.length; j++){
+            for(uint j = 0; j < i; j++){
                 if (array[j] > array[i])
                     (array[i],array[j]) = (array[j],array[i]);
         }
